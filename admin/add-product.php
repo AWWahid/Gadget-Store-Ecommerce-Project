@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category_id = (int)$_POST['category_id'];
     $supplier_id = (int)$_POST['supplier_id'];
     $description = sanitize($_POST['description']);
+    $image_source = 'both'; // Always use both options
     
     // Insert product
     $stmt = $pdo->prepare("INSERT INTO product (product_name, price, stock_quantity, brand_id, category_id, supplier_id, description) 
@@ -31,22 +32,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $product_id = $pdo->lastInsertId();
     
-    // Handle image upload
-    if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-        $upload_dir = '../uploads/products/';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+    // Initialize counter for setting primary image
+    $image_counter = 0;
+    
+    // Handle images based on selected source
+    if ($image_source === 'upload') {
+        // Handle local file upload
+        if (isset($_FILES['upload_images']) && !empty($_FILES['upload_images']['name'][0])) {
+            $upload_dir = '../uploads/products/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            foreach ($_FILES['upload_images']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['upload_images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $file_name = uniqid() . '_' . basename($_FILES['upload_images']['name'][$key]);
+                    $file_path = $upload_dir . $file_name;
+                    
+                    if (move_uploaded_file($tmp_name, $file_path)) {
+                        $image_url = 'uploads/products/' . $file_name;
+                        $is_primary = ($image_counter === 0) ? 1 : 0;
+                        
+                        $img_stmt = $pdo->prepare("INSERT INTO product_image (product_id, image_url, is_primary) VALUES (?, ?, ?)");
+                        $img_stmt->execute([$product_id, $image_url, $is_primary]);
+                        $image_counter++;
+                    }
+                }
+            }
+        }
+    } elseif ($image_source === 'url') {
+        // Handle external URLs
+        if (!empty($_POST['image_urls'])) {
+            $urls = explode("\n", trim($_POST['image_urls']));
+            foreach ($urls as $url) {
+                $url = trim($url);
+                if (!empty($url)) {
+                    // Check if it's a valid URL or a relative path
+                    if (filter_var($url, FILTER_VALIDATE_URL) || strpos($url, 'http') === 0) {
+                        $is_primary = ($image_counter === 0) ? 1 : 0;
+                        
+                        $img_stmt = $pdo->prepare("INSERT INTO product_image (product_id, image_url, is_primary) VALUES (?, ?, ?)");
+                        $img_stmt->execute([$product_id, $url, $is_primary]);
+                        $image_counter++;
+                    }
+                }
+            }
+        }
+    } elseif ($image_source === 'both') {
+        // Handle both uploads and URLs
+        
+        // First process file uploads
+        if (isset($_FILES['upload_images']) && !empty($_FILES['upload_images']['name'][0])) {
+            $upload_dir = '../uploads/products/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            foreach ($_FILES['upload_images']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['upload_images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $file_name = uniqid() . '_' . basename($_FILES['upload_images']['name'][$key]);
+                    $file_path = $upload_dir . $file_name;
+                    
+                    if (move_uploaded_file($tmp_name, $file_path)) {
+                        $image_url = 'uploads/products/' . $file_name;
+                        $is_primary = ($image_counter === 0) ? 1 : 0;
+                        
+                        $img_stmt = $pdo->prepare("INSERT INTO product_image (product_id, image_url, is_primary) VALUES (?, ?, ?)");
+                        $img_stmt->execute([$product_id, $image_url, $is_primary]);
+                        $image_counter++;
+                    }
+                }
+            }
         }
         
-        foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
-            if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                $file_name = uniqid() . '_' . basename($_FILES['images']['name'][$key]);
-                $file_path = $upload_dir . $file_name;
-                
-                if (move_uploaded_file($tmp_name, $file_path)) {
-                    $image_url = 'uploads/products/' . $file_name;
-                    $img_stmt = $pdo->prepare("INSERT INTO product_image (product_id, image_url) VALUES (?, ?)");
-                    $img_stmt->execute([$product_id, $image_url]);
+        // Then process URLs
+        if (!empty($_POST['image_urls'])) {
+            $urls = explode("\n", trim($_POST['image_urls']));
+            foreach ($urls as $url) {
+                $url = trim($url);
+                if (!empty($url)) {
+                    if (filter_var($url, FILTER_VALIDATE_URL) || strpos($url, 'http') === 0) {
+                        $is_primary = ($image_counter === 0) ? 1 : 0;
+                        
+                        $img_stmt = $pdo->prepare("INSERT INTO product_image (product_id, image_url, is_primary) VALUES (?, ?, ?)");
+                        $img_stmt->execute([$product_id, $url, $is_primary]);
+                        $image_counter++;
+                    }
                 }
             }
         }
@@ -80,6 +151,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .main-content {
             padding: 20px;
         }
+        .image-source-section {
+
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .image-source-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -97,7 +179,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <h4 class="mb-0">Add New Product</h4>
                             </div>
                             <div class="card-body">
-                                <!-- Display success/error messages -->
                                 <?php if (isset($_SESSION['success'])): ?>
                                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                                         <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
@@ -158,10 +239,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                                     </div>
                                     
-                                    <div class="mb-3">
-                                        <label for="images" class="form-label">Product Images</label>
-                                        <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*">
-                                        <small class="text-muted">You can upload multiple images</small>
+
+                                    
+                                    <!-- Both Section -->
+                                    <div id="both_section" class="image-source-section">
+                                        <div class="mb-3">
+                                            <label for="upload_images_both" class="form-label">Upload Images</label>
+                                            <input type="file" class="form-control" id="upload_images_both" name="upload_images[]" multiple accept="image/*">
+                                            <small class="text-muted">Upload images from your computer</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="image_urls_both" class="form-label">Additional Image URLs</label>
+                                            <textarea class="form-control" id="image_urls_both" name="image_urls" rows="3" placeholder="Enter additional image URLs (one per line)"></textarea>
+                                            <small class="text-muted">You can add more images via URLs</small>
+                                        </div>
                                     </div>
                                     
                                     <div class="d-grid gap-2">
@@ -178,5 +269,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
-</html>
+</html> 
