@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 11, 2025 at 01:17 PM
+-- Generation Time: Dec 12, 2025 at 11:35 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -56,10 +56,7 @@ CREATE TABLE `customer` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `phone_number` varchar(11) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
-  `city` varchar(20) DEFAULT NULL,
-  `division` varchar(20) DEFAULT NULL,
-  `postcode` int(4) DEFAULT NULL
+  `address` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
