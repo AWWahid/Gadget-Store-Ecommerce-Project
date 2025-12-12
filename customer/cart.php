@@ -62,7 +62,54 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.10; // 10%
 $shipping = count($cart_items) > 0 ? 5.00 : 0;
 $total = $subtotal + $tax + $shipping;
+
 ?>
+
+<?php
+// Only run if button pressed
+if (isset($_POST['apply_discount'])) {
+
+    $code = $_POST['discount_code'];
+
+    // Fetch discount using PDO
+    $dstmt = $pdo->prepare("SELECT * FROM discount WHERE discount_code = ? LIMIT 1");
+    $dstmt->execute([$code]);
+    $discount = $dstmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($discount) {
+
+        if ($discount['is_active'] == 1) {
+
+            $today = date("Y-m-d");
+
+            if ($today >= $discount['start_date'] && $today <= $discount['expiry_date']) {
+
+                if ($discount['type'] == "percentage") {
+                    $discountAmount = ($subtotal * $discount['value']) / 100;
+                    $subtotal = max(0, $subtotal - $discountAmount);
+
+                } elseif ($discount['type'] == "fixed") {
+                    $subtotal = max(0, $subtotal - $discount['value']);
+                }
+
+                echo "<p style='color:green;font-weight:bold;'>Discount Applied Successfully</p>";
+
+            } else {
+                echo "<p style='color:red;font-weight:bold;'>This discount code is expired or not active yet.</p>";
+            }
+
+        } else {
+            echo "<p style='color:red;font-weight:bold;'>This discount code is not active.</p>";
+        }
+
+    } else {
+        echo "<p style='color:red;font-weight:bold;'>Invalid discount code.</p>";
+    }
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -165,6 +212,21 @@ require("navbar.php");
                                 <textarea name="shipping_address" id="shipping_address" class="form-control" rows="3" required></textarea>
                             </div>
 
+                            <!-- DISCOUNT CODE -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="discount_code" class="form-label fw-bold">Discount Code</label>
+                                        <textarea name="discount_code" id="discount_code" class="form-control" rows="1" required></textarea>
+                                    </div>
+                                </div>
+                                        <div class="mb-3">
+                                        <form method="POST" style="margin-top: 15px;">
+                                        <button type="submit" name="apply_discount">Apply</button>
+                                        
+                                        </div>
+
+                            </div>
                             <!-- PAYMENT METHOD -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Payment Method</label>
@@ -212,4 +274,4 @@ toggleTransactionField();
 </script>
 
 </body>
-</html>
+                    </html>
