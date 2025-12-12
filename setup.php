@@ -144,7 +144,6 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     echo "Created 'discount' table.<br>";
     
-    // 9. Order table (note: 'order' is a reserved word, so we use backticks)
     $pdo->exec("CREATE TABLE orders (
         `order_id` int(11) NOT NULL AUTO_INCREMENT,
         `customer_id` int(11) NOT NULL,
@@ -353,4 +352,5 @@ try {
         </div>
     </div>
 </body>
+
 </html>
