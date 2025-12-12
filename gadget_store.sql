@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 12, 2025 at 11:35 AM
+-- Generation Time: Dec 12, 2025 at 11:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -140,6 +140,18 @@ CREATE TABLE `product` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `product_image`
+--
+
+CREATE TABLE `product_image` (
+  `image_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `image_url` varchar(500) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `review`
 --
 
@@ -260,6 +272,13 @@ ALTER TABLE `product`
   ADD KEY `supplier_id` (`supplier_id`);
 
 --
+-- Indexes for table `product_image`
+--
+ALTER TABLE `product_image`
+  ADD PRIMARY KEY (`image_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
 -- Indexes for table `review`
 --
 ALTER TABLE `review`
@@ -343,6 +362,12 @@ ALTER TABLE `product`
   MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `product_image`
+--
+ALTER TABLE `product_image`
+  MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `review`
 --
 ALTER TABLE `review`
@@ -402,6 +427,12 @@ ALTER TABLE `product`
   ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`brand_id`) REFERENCES `brand` (`brand_id`),
   ADD CONSTRAINT `product_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`),
   ADD CONSTRAINT `product_ibfk_3` FOREIGN KEY (`supplier_id`) REFERENCES `supplier` (`supplier_id`);
+
+--
+-- Constraints for table `product_image`
+--
+ALTER TABLE `product_image`
+  ADD CONSTRAINT `product_image_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `review`
