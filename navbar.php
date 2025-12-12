@@ -9,22 +9,6 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="index.php">Home</a>
                     </li>
-                    <?php foreach ($categories as $cat): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <?php echo $cat['category_name']; ?>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <?php 
-                            $subcategories = getSubcategories($pdo, $cat['category_id']);
-                            foreach ($subcategories as $sub): ?>
-                            <li><a class="dropdown-item" href="?category=<?php echo $cat['category_id']; ?>&subcategory=<?php echo $sub['sub_category_id']; ?>">
-                                <?php echo $sub['sub_category_name']; ?>
-                            </a></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </li>
-                    <?php endforeach; ?>
                 </ul>
                 
                 <!-- Search Form -->
