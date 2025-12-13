@@ -2,6 +2,30 @@
 /**
  * Check if user is logged in
  */
+function displaySessionMessages() {
+    // Start session if not already started (optional, but safer)
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    // Check for success message
+    if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($_SESSION['success']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['success']); 
+    endif; 
+    
+    // Check for error message
+    if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($_SESSION['error']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); 
+    endif;
+}
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }
