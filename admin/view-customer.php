@@ -32,7 +32,7 @@ $stats_sql = "SELECT
     AVG(o.total_amount) as avg_order_value,
     MAX(o.order_date) as last_order_date,
     MIN(o.order_date) as first_order_date
-    FROM `order` o 
+    FROM orders o 
     WHERE o.customer_id = ?";
 $stats_stmt = $pdo->prepare($stats_sql);
 $stats_stmt->execute([$customer_id]);
@@ -42,7 +42,7 @@ $stats = $stats_stmt->fetch();
 $orders_sql = "SELECT o.*, 
     COUNT(oi.order_item_id) as item_count,
     (SELECT status FROM payment WHERE order_id = o.order_id ORDER BY payment_date DESC LIMIT 1) as payment_status
-    FROM `order` o
+    FROM orders o
     LEFT JOIN order_item oi ON o.order_id = oi.order_id
     WHERE o.customer_id = ?
     GROUP BY o.order_id
@@ -73,7 +73,7 @@ if ($stats['total_orders'] > 0) {
         DATE_FORMAT(order_date, '%Y-%m') as month,
         SUM(total_amount) as monthly_revenue,
         COUNT(order_id) as monthly_orders
-        FROM `order` 
+        FROM orders 
         WHERE customer_id = ? 
         GROUP BY DATE_FORMAT(order_date, '%Y-%m')
         ORDER BY month DESC

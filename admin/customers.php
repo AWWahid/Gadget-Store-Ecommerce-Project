@@ -18,7 +18,7 @@ $sql = "SELECT c.*,
                COALESCE(SUM(o.total_amount), 0) as total_spent,
                MAX(o.order_date) as last_order_date
         FROM customer c
-        LEFT JOIN `order` o ON c.customer_id = o.customer_id
+        LEFT JOIN orders o ON c.customer_id = o.customer_id
         WHERE 1=1";
 
 $params = [];
@@ -51,7 +51,7 @@ if (isset($_GET['delete'])) {
     $customer_id = (int)$_GET['delete'];
     
     // Check if customer has orders
-    $check_stmt = $pdo->prepare("SELECT COUNT(*) as order_count FROM `order` WHERE customer_id = ?");
+    $check_stmt = $pdo->prepare("SELECT COUNT(*) as order_count FROM orders WHERE customer_id = ?");
     $check_stmt->execute([$customer_id]);
     $result = $check_stmt->fetch();
     
@@ -181,8 +181,8 @@ if (isset($_GET['toggle_admin'])) {
                     // Get statistics
                     $total_customers = $pdo->query("SELECT COUNT(*) as count FROM customer")->fetch()['count'];
                     $total_admins = $pdo->query("SELECT COUNT(*) as count FROM customer WHERE is_admin = 1")->fetch()['count'];
-                    $active_customers = $pdo->query("SELECT COUNT(DISTINCT customer_id) as count FROM `order` WHERE order_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetch()['count'];
-                    $total_revenue = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM `order`")->fetch()['total'];
+                    $active_customers = $pdo->query("SELECT COUNT(DISTINCT customer_id) as count FROM orders WHERE order_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)")->fetch()['count'];
+                    $total_revenue = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) as total FROM orders")->fetch()['total'];
                     ?>
                     
                     <div class="col-md-3">

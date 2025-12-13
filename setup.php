@@ -144,8 +144,7 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     echo "Created 'discount' table.<br>";
     
-    // 9. Order table (note: 'order' is a reserved word, so we use backticks)
-    $pdo->exec("CREATE TABLE `order` (
+    $pdo->exec("CREATE TABLE orders (
         `order_id` int(11) NOT NULL AUTO_INCREMENT,
         `customer_id` int(11) NOT NULL,
         `order_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -169,7 +168,7 @@ try {
         PRIMARY KEY (`order_item_id`),
         UNIQUE KEY `unique_order_product` (`order_id`,`product_id`),
         KEY `product_id` (`product_id`),
-        CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`),
+        CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES orders (`order_id`),
         CONSTRAINT `order_item_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     echo "Created 'order_item' table.<br>";
@@ -185,7 +184,7 @@ try {
         `transaction_id` varchar(100) DEFAULT NULL,
         PRIMARY KEY (`payment_id`),
         KEY `order_id` (`order_id`),
-        CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`)
+        CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES orders (`order_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     echo "Created 'payment' table.<br>";
     
@@ -201,7 +200,7 @@ try {
         `status` varchar(50) NOT NULL,
         PRIMARY KEY (`shipment_id`),
         KEY `order_id` (`order_id`),
-        CONSTRAINT `shipment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`)
+        CONSTRAINT `shipment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES orders (`order_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     echo "Created 'shipment' table.<br>";
     
@@ -353,4 +352,5 @@ try {
         </div>
     </div>
 </body>
+
 </html>

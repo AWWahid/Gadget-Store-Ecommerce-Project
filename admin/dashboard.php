@@ -10,9 +10,9 @@ if (!isLoggedIn() || !isAdmin()) {
 
 // Get statistics
 $total_products = $pdo->query("SELECT COUNT(*) as count FROM product")->fetch()['count'];
-$total_orders = $pdo->query("SELECT COUNT(*) as count FROM `order`")->fetch()['count'];
+$total_orders = $pdo->query("SELECT COUNT(*) as count FROM orders")->fetch()['count'];
 $total_customers = $pdo->query("SELECT COUNT(*) as count FROM customer WHERE is_admin = 0")->fetch()['count'];
-$recent_orders = $pdo->query("SELECT o.*, c.first_name, c.last_name FROM `order` o 
+$recent_orders = $pdo->query("SELECT o.*, c.first_name, c.last_name FROM orders o 
                               JOIN customer c ON o.customer_id = c.customer_id 
                               ORDER BY order_date DESC LIMIT 5")->fetchAll();
 ?>
@@ -123,7 +123,7 @@ $recent_orders = $pdo->query("SELECT o.*, c.first_name, c.last_name FROM `order`
                                 <h5 class="card-title">Revenue</h5>
                                 <h2>
                                     $<?php 
-                                    $revenue = $pdo->query("SELECT SUM(total_amount) as total FROM `order` WHERE order_status = 'completed'")->fetch()['total'];
+                                    $revenue = $pdo->query("SELECT SUM(total_amount) as total FROM orders WHERE order_status = 'completed'")->fetch()['total'];
                                     echo number_format($revenue ?? 0, 2);
                                     ?>
                                 </h2>
